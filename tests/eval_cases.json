@@ -1,0 +1,63 @@
+[
+  {"id": "01", "type": "Single add", "turns": ["coffee 80"],
+   "expect": {"records": [{"amount": 80, "currency": "TWD", "category": "Food", "date": 0}]}},
+
+  {"id": "02", "type": "Multiple add", "turns": ["lunch 120, bubble tea 65, MRT 30"],
+   "expect": {"records": [
+     {"amount": 120, "currency": "TWD", "category": "Food", "date": 0},
+     {"amount": 65, "currency": "TWD", "category": "Food", "date": 0},
+     {"amount": 30, "currency": "TWD", "category": "Transport", "date": 0}]}},
+
+  {"id": "03", "type": "Add with date", "turns": ["taxi 250 yesterday"],
+   "expect": {"records": [{"amount": 250, "currency": "TWD", "category": "Transport", "date": -1}]}},
+
+  {"id": "04", "type": "Add with currency", "turns": ["netflix 15 USD"],
+   "expect": {"records": [{"amount": 15, "currency": "USD", "category": "Entertainment", "date": 0}]}},
+
+  {"id": "05", "type": "Chinese input", "turns": ["午餐 100"],
+   "expect": {"records": [{"amount": 100, "currency": "TWD", "category": "Food", "date": 0}]}},
+
+  {"id": "06", "type": "Query by category", "turns": ["How much did I spend on food this week?"],
+   "seed": [
+     {"amount": 120, "category": "Food", "note": "lunch", "date": 0},
+     {"amount": 65, "category": "Food", "note": "bubble tea", "date": 0},
+     {"amount": 30, "category": "Transport", "note": "MRT", "date": 0},
+     {"amount": 500, "category": "Food", "note": "old dinner", "date": -20}],
+   "expect": {"reply_numbers": [185], "tools_called": ["query_expenses"], "record_count": 4}},
+
+  {"id": "07", "type": "Query total", "turns": ["What is my total spending this month?"],
+   "seed": [
+     {"amount": 120, "category": "Food", "note": "lunch", "date": 0},
+     {"amount": 30, "category": "Transport", "note": "MRT", "date": 0},
+     {"amount": 999, "category": "Shopping", "note": "old", "date": -40}],
+   "expect": {"reply_numbers": [150], "tools_called": ["query_expenses"]}},
+
+  {"id": "08", "type": "Multi-step (query + convert)",
+   "turns": ["How much did I spend on food today, and how much is that in rupiah?"],
+   "seed": [{"amount": 200, "category": "Food", "note": "dinner", "date": 0}],
+   "expect": {"reply_numbers": [200], "tools_called": ["query_expenses", "convert_currency"]}},
+
+  {"id": "09", "type": "Correction", "turns": ["Change the bubble tea to 55"],
+   "seed": [
+     {"amount": 120, "category": "Food", "note": "lunch", "date": 0},
+     {"amount": 65, "category": "Food", "note": "bubble tea", "date": 0}],
+   "expect": {"records": [
+     {"amount": 120, "currency": "TWD", "category": "Food", "date": 0},
+     {"amount": 55, "currency": "TWD", "category": "Food", "date": 0}]}},
+
+  {"id": "10", "type": "Delete", "turns": ["Delete the coffee record"],
+   "seed": [
+     {"amount": 80, "category": "Food", "note": "coffee", "date": 0},
+     {"amount": 120, "category": "Food", "note": "lunch", "date": 0}],
+   "expect": {"records": [{"amount": 120, "currency": "TWD", "category": "Food", "date": 0}]}},
+
+  {"id": "11", "type": "Follow-up (memory)", "turns": ["lunch 150", "sorry, it was 130"],
+   "expect": {"records": [{"amount": 130, "currency": "TWD", "category": "Food", "date": 0}]}},
+
+  {"id": "12", "type": "Missing amount", "turns": ["I bought a book"],
+   "expect": {"record_count": 0, "tools_not_called": ["add_expense"], "reply_has_question": true}},
+
+  {"id": "13", "type": "Off-topic", "turns": ["Write me a poem about cats"],
+   "expect": {"record_count": 0, "tools_not_called": ["add_expense"],
+              "reply_contains_any": ["expense", "spending", "only help"]}}
+]

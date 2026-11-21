@@ -1,0 +1,34 @@
+# Builds the ExpenseMate image with Podman and runs the tests inside the container.
+# Runs on GitHub's Ubuntu servers, which have Podman preinstalled.
+name: Podman build and test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  podman:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Show Podman version
+        run: podman --version
+
+      - name: Build the image
+        run: podman build -t expensemate .
+
+      - name: Run the unit and agent-loop tests inside the container
+        run: podman run --rm --entrypoint python expensemate -m pytest -v
+
+      - name: Start the chat inside the container (no LLM available here)
+        # Sends one message and quits. With no Ollama server on this machine the
+        # agent must answer with its "could not reach the language model" message
+        # instead of crashing, and save the trace to the /data volume.
+        run: |
+          printf 'lunch 120\nquit\n' | podman run -i --rm -v expensemate-data:/data expensemate | tee chat.txt
+          grep -q "could not reach the language model" chat.txt
+          podman run --rm -v expensemate-data:/data --entrypoint ls expensemate -l /data /data/logs
