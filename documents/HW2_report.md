@@ -252,3 +252,20 @@ success (≥ 85%) and clarification correctness (100%) are not yet met. All
 recording and query cases pass; the failures are in multi-step reasoning,
 looking up ids, and asking instead of guessing. These results are the
 "before" baseline for the HW3 enhancement.
+
+**Podman build and container test** (GitHub Actions, `.github/workflows/podman.yml`).
+Every push to the repository builds the image with Podman on a GitHub Ubuntu 24.04
+server and runs three checks inside the container. Run on 2026-11-21, all steps passed:
+https://github.com/christianaxel99/ExpenseMate/actions/runs/44921696139
+
+| Step | Command | Result |
+|---|---|---|
+| Build the image | `podman build -t expensemate .` | Pass |
+| Unit and agent-loop tests in the container | `podman run --rm --entrypoint python expensemate -m pytest -v` | Pass (23 tests) |
+| Start the chat in the container | `printf 'lunch 120\nquit\n' \| podman run -i --rm -v expensemate-data:/data expensemate` | Pass: with no LLM server on that machine the agent replies "could not reach the language model" instead of crashing, and saves the trace in the `/data` volume |
+
+The full conversation with the real model (container talking to Ollama on the host)
+was run without the container on the development laptop (sections 3 and 5 above).
+The laptop could not run Podman itself yet, because a Windows system-file error
+prevents installing WSL, which Podman needs on Windows. The GitHub run above is the
+evidence that the Containerfile builds and the agent runs inside Podman.
