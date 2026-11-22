@@ -144,8 +144,15 @@ class Toolbox:
         return {"ok": True, "record": db.row_to_record(db.get(self.conn, new_id))}
 
     def tool_query_expenses(self, period="all", start_date=None, end_date=None,
-                            category=None, keyword=None):
+                            category=None, keyword=None, date=None):
         today = self.today_fn()
+        # Models often send "date" for a single day (or a period name), so accept it.
+        if date and not (start_date or end_date):
+            d = str(date).strip().lower().replace(" ", "_")
+            if d in PERIODS:
+                period = d
+            else:
+                start_date = end_date = date
         if start_date or end_date:
             start = resolve_date(start_date, today) if start_date else None
             end = resolve_date(end_date, today) if end_date else today.isoformat()
@@ -270,6 +277,8 @@ TOOL_SCHEMAS = [
                        "description": "Time range. Ignored if start_date/end_date are given."},
             "start_date": {"type": "string", "description": "YYYY-MM-DD (optional)"},
             "end_date": {"type": "string", "description": "YYYY-MM-DD (optional)"},
+            "date": {"type": "string",
+                     "description": "One single day: 'today', 'yesterday' or YYYY-MM-DD (optional)"},
             "category": {"type": "string", "enum": config.CATEGORIES},
             "keyword": {"type": "string", "description": "Text to search in notes, e.g. 'coffee'"},
         }, "required": []}}},

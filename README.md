@@ -45,7 +45,7 @@ documents/
 | Tool | Purpose | Input | Output | Error handling |
 |---|---|---|---|---|
 | `add_expense` | Save one expense | amount, category, note, currency (default TWD), date (default today) | the saved record with its id | rejects amount ≤ 0, non-numbers, unknown category/currency, invalid or future dates |
-| `query_expenses` | Totals and lists | period (`today`, `this_week`, `last_month`, …) or start/end date, category, keyword | count, totals per currency, totals per category, up to 20 records | empty result returns count 0; bad period/date returns an error |
+| `query_expenses` | Totals and lists | period (`today`, `this_week`, `last_month`, …), start/end date or one `date`, category, keyword | count, totals per currency, totals per category, up to 20 records | empty result returns count 0; bad period/date returns an error |
 | `update_expense` | Correct a record | record_id + fields to change | the updated record | "record not found", "no fields to change" |
 | `delete_expense` | Remove a record | record_id | the deleted record | "record not found" |
 | `convert_currency` | Convert an amount | amount, from_currency, to_currency (TWD, IDR, USD) | converted amount, rate, rate source | live API → last cached rate → built-in approximate rate, with a warning |

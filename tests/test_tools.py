@@ -70,6 +70,19 @@ def test_query_keyword_and_empty_result(tb):
     assert empty["ok"] and empty["count"] == 0 and empty["totals"] == {}
 
 
+def test_query_accepts_date_for_one_day(tb):
+    tb.run("add_expense", {"amount": 120, "category": "Food", "note": "lunch"})
+    tb.run("add_expense", {"amount": 80, "category": "Food", "note": "dinner", "date": "yesterday"})
+    for value in ["today", "2026-11-19", "Today"]:
+        r = tb.run("query_expenses", {"category": "Food", "date": value})
+        assert r["ok"] and r["totals"] == {"TWD": 120}, value
+    r = tb.run("query_expenses", {"date": "yesterday"})
+    assert r["totals"] == {"TWD": 80}
+    r = tb.run("query_expenses", {"date": "this_week"})          # a period name also works
+    assert r["totals"] == {"TWD": 200}
+    assert "not valid" in tb.run("query_expenses", {"date": "someday"})["error"]
+
+
 def test_periods():
     assert resolve_period("this_week", TODAY) == ("2026-11-16", "2026-11-19")
     assert resolve_period("last_week", TODAY) == ("2026-11-09", "2026-11-15")

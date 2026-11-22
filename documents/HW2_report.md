@@ -44,6 +44,10 @@ refer to the record just saved.
 - `update_expense` and `delete_expense` were planned for HW4 but are already working.
 - `query_expenses` takes a `period` name (`this_week`, `last_month`, …) that the
   tool turns into exact dates, so the LLM does not have to calculate dates.
+  It also accepts `date` for a single day. In testing (2026-11-22) the model kept
+  sending `{"date": "today"}`, which first failed with "unexpected keyword argument"
+  and needed a retry (3 LLM calls, 7.1 s). After adding `date`, the same question
+  takes 2 LLM calls (about 4.5 s, 3 runs) with no tool error.
 - Currency conversion uses a three-level fallback: live API → last cached live
   rate (saved in SQLite) → built-in approximate rate, and warns when not live.
 - The PEAS section of HW1 was corrected after the teacher's feedback (read-only
@@ -59,7 +63,7 @@ the LLM so it can correct the call or ask the user.
 | Tool | Purpose | Input | Output | Error handling |
 |---|---|---|---|---|
 | `add_expense` | Save one expense | `amount` (number), `category` (one of 8), `note`, `currency` (TWD/IDR/USD, default TWD; "NTD" accepted), `date` (`today`, `yesterday` or YYYY-MM-DD; default today) | saved record with id | amount ≤ 0 or not a number; unknown category; unsupported currency; invalid or future date → error, nothing saved |
-| `query_expenses` | Find records and exact totals | `period` (`today`, `yesterday`, `this_week`, `last_week`, `this_month`, `last_month`, `all`) or `start_date`/`end_date`; optional `category`, `keyword` (searches notes) | `count`, `totals` per currency, `by_category`, up to 20 `records` | no match → `count: 0`, empty totals (not an error); bad period/date/category → error |
+| `query_expenses` | Find records and exact totals | `period` (`today`, `yesterday`, `this_week`, `last_week`, `this_month`, `last_month`, `all`) or `start_date`/`end_date`, or `date` for one day; optional `category`, `keyword` (searches notes) | `count`, `totals` per currency, `by_category`, up to 20 `records` | no match → `count: 0`, empty totals (not an error); bad period/date/category → error |
 | `update_expense` | Correct a record | `record_id` + any of amount, category, note, currency, date | updated record | id not a number / not found; no fields given; same validation as add |
 | `delete_expense` | Remove a record | `record_id` | the deleted record | id not a number / not found |
 | `convert_currency` | Convert an amount | `amount`, `from_currency`, `to_currency` | `converted`, `rate`, `rate_source` (`live`/`cached`/`fallback`), `rate_as_of`, optional `warning` | API down → cached rate → built-in rate, with a warning; bad amount/currency → error |
@@ -206,7 +210,7 @@ added a total it did not compute with a tool, and that total is wrong
 
 ## 5. Testing evidence
 
-**Unit and agent-loop tests** (`python -m pytest -q`): 23 tests, all passing.
+**Unit and agent-loop tests** (`python -m pytest -q`): 24 tests, all passing.
 They cover tool validation, exact totals (0.1 + 0.2 = 0.3), currency separation,
 date periods, update/delete, the live → cached → fallback rate chain, and the
 agent loop with a scripted fake LLM (multi-tool requests, multi-step
