@@ -160,3 +160,12 @@ Every request's full trace is also saved to `logs/trace-YYYY-MM-DD.jsonl`.
 | Very slow answers | Use a smaller model, e.g. `-e OLLAMA_MODEL=qwen2.5:3b` (accuracy may drop). |
 | Conversion says the rate may be outdated | The exchange-rate API could not be reached; the agent used a cached or built-in rate. |
 | `podman: command not found` / machine not running | Run `podman machine start`. |
+
+## AI assistance
+
+This project was developed with help from an AI coding assistant (Claude, by
+Anthropic), which helped write code, tests and documentation. The project idea,
+requirements and design come from my HW1 planning document. I ran the agent,
+the tests and the evaluation myself, and reviewed the results reported in
+`documents/HW2_report.md`. Commits made with the assistant's help are marked
+`Co-Authored-By: Claude` in the history.
