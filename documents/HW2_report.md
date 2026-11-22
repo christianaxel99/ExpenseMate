@@ -208,6 +208,33 @@ added a total it did not compute with a tool, and that total is wrong
   instead of an id (the tool finds the record and asks to clarify when several
   match), or add a planning step that runs the lookup first.
 
+### Failure 6 — the model uses an argument name the tool did not have (observed, fixed)
+
+- **Situation:** manual test on 2026-11-22, input `how much food did i spend today ?`:
+  ```
+  [Tool Call]    query_expenses({"category": "Food", "date": "today"})
+  [Observation]  {"ok": false, "error": "Bad arguments for query_expenses: Toolbox.tool_query_expenses() got an unexpected keyword argument 'date'"}
+  [Decision 2]   call query_expenses — It looks like there was an issue with the query. Let me try again ...
+  [Tool Call]    query_expenses({"category": "Food", "period": "today"})
+  [Final Answer] Today, you spent 120 TWD on food, which was for lunch.
+  [Stats]        {"latency_s": 7.1, "llm_calls": 3, "tool_calls": 2, "tool_errors": 1}
+  ```
+- **Cause:** `add_expense` takes a `date` argument, so the model reuses the same
+  name for `query_expenses`, which only had `period` and `start_date`/`end_date`.
+  The same wrong argument appears in eval case 08 (Failure 4).
+- **What already worked:** the wrong argument was caught, and the error was given
+  back to the model as an observation. The model corrected the call itself, so
+  the answer was right, but it cost one extra LLM call and about 2.5 s.
+- **Solution (done):** `query_expenses` now also accepts `date` for a single day
+  (`today`, `yesterday`, YYYY-MM-DD, or a period name), and the tool schema
+  lists it. Rather than forcing the model to follow the schema exactly, the tool
+  accepts the name the model naturally uses. Tested in
+  `test_query_accepts_date_for_one_day`.
+- **Result:** the same question, asked 3 times with the real model, now needs
+  2 LLM calls, 0 tool errors and about 4.5 s each time (was 3 calls, 1 error, 7.1 s).
+  The 13-case evaluation in section 5 was run before this fix and has not been
+  re-run, so its numbers (including case 08) are unchanged.
+
 ## 5. Testing evidence
 
 **Unit and agent-loop tests** (`python -m pytest -q`): 24 tests, all passing.
