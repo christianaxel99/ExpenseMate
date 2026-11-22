@@ -259,13 +259,13 @@ looking up ids, and asking instead of guessing. These results are the
 
 **Podman build and container test** (GitHub Actions, `.github/workflows/podman.yml`).
 Every push to the repository builds the image with Podman on a GitHub Ubuntu 24.04
-server and runs three checks inside the container. Run on 2026-11-21, all steps passed:
-https://github.com/christianaxel99/ExpenseMate/actions/runs/44921696139
+server and runs three checks inside the container. Latest run (2026-11-22), all steps passed:
+https://github.com/christianaxel99/ExpenseMate/actions/runs/44989755918
 
 | Step | Command | Result |
 |---|---|---|
 | Build the image | `podman build -t expensemate .` | Pass |
-| Unit and agent-loop tests in the container | `podman run --rm --entrypoint python expensemate -m pytest -v` | Pass (23 tests) |
+| Unit and agent-loop tests in the container | `podman run --rm --entrypoint python expensemate -m pytest -v` | Pass (24 tests) |
 | Start the chat in the container | `printf 'lunch 120\nquit\n' \| podman run -i --rm -v expensemate-data:/data expensemate` | Pass: with no LLM server on that machine the agent replies "could not reach the language model" instead of crashing, and saves the trace in the `/data` volume |
 
 The full conversation with the real model (container talking to Ollama on the host)
